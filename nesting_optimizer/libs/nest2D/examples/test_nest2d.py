@@ -81,8 +81,8 @@ def test_bottom_left_packing():
     # Run nesting with NFP and FirstFit
     pgrp = nest(shapes, box,
                 placer_type=PlacerType.NFP,
-                selector_type=SelectorType.DJDHeuristic,
-                # selector_type=SelectorType.FirstFit,
+                # selector_type=SelectorType.DJDHeuristic,
+                selector_type=SelectorType.FirstFit,
                 spacing=0)
 
     # Print results with coordinate snapping
