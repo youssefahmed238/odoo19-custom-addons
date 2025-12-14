@@ -1,0 +1,16 @@
+<templates>
+    <t t-name="product.DXFFileUploader">
+        <FileUploader
+            acceptedFileExtensions="'.dxf'"
+            fileUploadClass="'dxf_file_uploader'"
+            multiUpload="false"
+            onUploaded.bind="onFileUploaded">
+            <t t-set-slot="toggler">
+                <button type="button" class="btn btn-primary" data-hotkey="shift+i">
+                    Upload DXF
+                </button>
+            </t>
+            <t t-slot="default"/>
+        </FileUploader>
+    </t>
+ </templates>

@@ -62,14 +62,14 @@ def test_bottom_left_packing():
     """Test strict bottom-left packing with NFP algorithm"""
 
     # Set up sheet dimensions
-    sheet_w = 400 # mm
-    sheet_h = 400  # mm
+    sheet_w = 420 # mm
+    sheet_h = 420  # mm
     box = Box(sheet_w * MM, sheet_h * MM)
 
     # Create shapes: 1 square + 4 triangles
     shapes = []
-    add_rect_shape(4, shapes)  # 1 rectangle (100x100)
-    add_triangle_shape(16, shapes)  # 4 triangles (95x95)
+    add_rect_shape(50, shapes)  # 1 rectangle (100x100)
+    # add_triangle_shape(16, shapes)  # 4 triangles (95x95)
 
     print("=" * 60)
     print("NESTING WITH NFP ALGORITHM - BOTTOM-LEFT PRIORITY")
