@@ -7,9 +7,11 @@
     'description': """
         This module integrates Nest2D C++ library for cutting optimization.
     """,
-    'depends': ['base', 'product'],
+    'depends': ['base', 'product', 'sale', 'stock'],
     'data': [
+        'views/product_product_view.xml',
         'views/product_template_view.xml',
+        'views/sale_order_view.xml',
     ],
     'assets': {
         'web.assets_backend': [

@@ -1,10 +1,10 @@
 from odoo import models, fields, api
 import base64
 import matplotlib
-import ezdxf
-
-matplotlib.use('Agg')  # Use non-GUI backend
 import matplotlib.pyplot as plt
+
+matplotlib.use('Agg')
+import ezdxf
 import io
 import tempfile
 
@@ -13,6 +13,10 @@ class ProductTemplate(models.Model):
     _inherit = 'product.template'
 
     dxf_file = fields.Binary("DXF File", attachment=True)
+    shape_points = fields.Text("Shape Points")
+
+    width = fields.Float("Width")
+    height = fields.Float("Height")
 
     def convert_dxf_to_image1920(self, dxf_data):
         """Convert DXF file to PNG image and set as product image"""
@@ -36,7 +40,7 @@ class ProductTemplate(models.Model):
                 for entity in entities:
                     if entity.dxftype() == 'LINE':
                         start = entity.dxf.start
-                        end = entity.dxf.end
+                        # end = entity.dxf.end
                         points.append((start[0], start[1]))
                         # points.append((end[0], end[1]))
 
@@ -55,14 +59,19 @@ class ProductTemplate(models.Model):
 
                 img_buffer = io.BytesIO()
                 plt.savefig(img_buffer, format='png', bbox_inches='tight',
-                           facecolor='white', edgecolor='none', dpi=150)
+                            facecolor='white', edgecolor='none', dpi=150)
                 plt.close(fig)
 
                 img_buffer.seek(0)
                 image_data = img_buffer.read()
                 img_buffer.close()
 
-                return base64.b64encode(image_data)
+                return {
+                    'image': base64.b64encode(image_data),
+                    'width': max(x) - min(x),
+                    'height': max(y) - min(y),
+                    'shape_points': '\n'.join([f"{pt[0]},{pt[1]}" for pt in points])
+                }
 
         except Exception as e:
             # Log the error but don't raise it to prevent blocking other operations

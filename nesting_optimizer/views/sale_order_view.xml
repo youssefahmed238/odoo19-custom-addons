@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sale_order_form_nesting_optimizer" model="ir.ui.view">
+        <field name="name">sale.order.form.nesting.optimizer</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_calculate" string="Calculate" type="object" class="btn-primary"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']"
+                   position="before">
+                    <field name="has_dxf_file" column_invisible="1"/>
+                    <field name="width" invisible="not has_dxf_file"/>
+                    <field name="height" invisible="not has_dxf_file"/>
+            </xpath>
+        </field>
+    </record>
+
+</odoo>

@@ -30,7 +30,7 @@ export class DXFFileUploader extends Component {
         try {
             const fileName = file.name.replace(".dxf", "");
 
-           const image = await this.orm.call(
+           const shape = await this.orm.call(
                 "product.template",
                 "convert_dxf_to_image1920",
                 [[this.props.record.id], file.data],
@@ -40,7 +40,10 @@ export class DXFFileUploader extends Component {
             this.props.record.update({
                 name: fileName,
                 dxf_file: file.data,
-                image_1920: image,
+                width: shape['width'],
+                height: shape['height'],
+                shape_points: shape['shape_points'],
+                image_1920: shape['image'],
                 type: 'service',
             });
 
