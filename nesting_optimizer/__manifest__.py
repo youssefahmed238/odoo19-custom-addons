@@ -17,6 +17,10 @@
         'web.assets_backend': [
             'nesting_optimizer/static/src/js/dxf_file_uploader.js',
             'nesting_optimizer/static/src/xml/dxf_file_uploader.xml',
+            'nesting_optimizer/static/src/js/nesting_image_viewer.js',
+            'nesting_optimizer/static/src/xml/nesting_image_viewer.xml',
+            'nesting_optimizer/static/src/css/nesting_image_viewer.css',
+            "nesting_optimizer/static/src/scss/sale_calculate.scss",
         ],
     },
     'application': True,

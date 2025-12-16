@@ -40,9 +40,9 @@ class ProductTemplate(models.Model):
                 for entity in entities:
                     if entity.dxftype() == 'LINE':
                         start = entity.dxf.start
-                        # end = entity.dxf.end
-                        points.append((start[0], start[1]))
-                        # points.append((end[0], end[1]))
+                        end = entity.dxf.end
+                        # points.append((start[0], start[1]))
+                        points.append((end[0], end[1]))
 
                 if not points:
                     return False
@@ -70,7 +70,7 @@ class ProductTemplate(models.Model):
                     'image': base64.b64encode(image_data),
                     'width': max(x) - min(x),
                     'height': max(y) - min(y),
-                    'shape_points': '\n'.join([f"{pt[0]},{pt[1]}" for pt in points])
+                    'shape_points': '\n'.join([f"{pt[0]},{pt[1]}" for pt in points[::-1]])
                 }
 
         except Exception as e:

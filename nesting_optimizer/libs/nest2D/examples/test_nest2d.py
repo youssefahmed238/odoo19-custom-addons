@@ -35,13 +35,19 @@ def add_rect_shape(n, shapes):
     """Add n rectangular shapes (100x100mm)"""
     for i in range(n):
         item = Item([
+            Point(0,0),
             Point(0, 100 * MM),
-            # Point(i * 100 * MM if i < 10 else 100 * MM, 100 * MM),
-            # Point(i * 100 * MM if i < 10 else 100 * MM, 0),
-            Point(100 * MM, 100 * MM),
+            Point(100 * MM,100 * MM),
             Point(100 * MM, 0),
-            Point(0, 0),
-            Point(0, 100 * MM)
+            Point(100 * MM, 0),
+            Point(0,0)
+            # Point(0, 100 * MM),
+            # # Point(i * 100 * MM if i < 10 else 100 * MM, 100 * MM),
+            # # Point(i * 100 * MM if i < 10 else 100 * MM, 0),
+            # Point(100 * MM, 100 * MM),
+            # Point(100 * MM, 0),
+            # Point(0, 0),
+            # Point(0, 100 * MM)
         ])
         shapes.append(item)
 
@@ -50,10 +56,14 @@ def add_triangle_shape(n, shapes):
     """Add n right triangle shapes (95x95mm)"""
     for i in range(n):
         item = Item([
+            # Point(0, 68 * MM),
+            # Point(68 * MM, 68 * MM),
+            # Point(68 * MM, 0),
+            # Point(0, 68 * MM)
+            Point(0, 0),
             Point(0, 68 * MM),
-            Point(68 * MM, 68 * MM),
             Point(68 * MM, 0),
-            Point(0, 68 * MM)
+            Point(0, 0)
         ])
         shapes.append(item)
 
@@ -68,8 +78,8 @@ def test_bottom_left_packing():
 
     # Create shapes: 1 square + 4 triangles
     shapes = []
-    add_rect_shape(50, shapes)  # 1 rectangle (100x100)
-    # add_triangle_shape(16, shapes)  # 4 triangles (95x95)
+    add_rect_shape(20, shapes)  # 1 rectangle (100x100)
+    add_triangle_shape(30, shapes)  # 4 triangles (95x95)
 
     print("=" * 60)
     print("NESTING WITH NFP ALGORITHM - BOTTOM-LEFT PRIORITY")
