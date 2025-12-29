@@ -1,11 +1,11 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.15)
 
 set(CMAKE_VERBOSE_MAKEFILE ON)
 
 project(nest2D)
 
 # Boost and its components
-find_package( Boost REQUIRED )
+find_package(Boost CONFIG REQUIRED)
 
 if ( NOT Boost_FOUND )
 

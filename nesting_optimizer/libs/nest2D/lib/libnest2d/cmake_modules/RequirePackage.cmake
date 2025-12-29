@@ -234,7 +234,7 @@ macro(require_package RP_ARGS_PACKAGE)
     # endif()
 
     if(NOT RP_FORCE_DOWNLOADING)
-        find_package(${RP_ARGS_PACKAGE} ${RP_ARGS_VERSION} QUIET ${RP_ARGS_UNPARSED_ARGUMENTS})
+        find_package(${RP_ARGS_PACKAGE} ${RP_ARGS_VERSION} CONFIG QUIET ${RP_ARGS_UNPARSED_ARGUMENTS})
     endif()
 
     set(_REQUIRED "")
