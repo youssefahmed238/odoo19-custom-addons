@@ -66,13 +66,9 @@ struct NfpPConfig {
      * the already packed items.
      *
      */
-    std::function<double(const _Item<RawShape>&)> object_function;
+    using Box = _Box<TPoint<RawShape>>;
+    std::function<double(const _Item<RawShape>&, const nfp::Shapes<RawShape>&, const Box& box)> object_function;
 
-    // NEW: ADVANCED OBJECTIVE FUNCTION WITH PILE CONTEXT ⭐
-    // This receives the current item AND the merged pile of already placed shapes
-    // Use this to calculate gaps, overlaps, and compactness metrics
-    std::function<double(const _Item<RawShape>&,
-                        const nfp::Shapes<RawShape>&)> object_function_with_pile;
     /**
      * @brief The quality of search for an optimal placement.
      * This is a compromise slider between quality and speed. Zero is the
@@ -154,9 +150,9 @@ template<class RawShape> class EdgeCache {
     std::vector<ContourCache> holes_;
 
     double accuracy_ = 1.0;
-    
-    static double length(const Edge &e) 
-    { 
+
+    static double length(const Edge &e)
+    {
         return std::sqrt(e.template sqlength<double>());
     }
 
@@ -644,15 +640,12 @@ private:
         // customizable by the library client
         std::function<double(const Item&)> _objfunc;
 
-        // PRIORITY 1: Use advanced objective function with pile context if provided
-        if(config_.object_function_with_pile) {
-            // Wrap the advanced function to match the expected signature
-            _objfunc = [this](const Item& item) {
-                return config_.object_function_with_pile(item, merged_pile_);
+        if(config_.object_function) {
+            // Wrap the simple function to match the expected signature
+            _objfunc = [this](const Item& i) {
+                return config_.object_function(i, merged_pile_, bin_);
             };
-        }
-        else if(config_.object_function) _objfunc = config_.object_function;
-        else {
+        } else {
 
             // Inside check has to be strict if no alignment was enabled
             std::function<double(const Box&)> ins_check;
@@ -979,7 +972,7 @@ private:
 
     void setInitialPosition(Item& item) {
         Box bb = item.boundingBox();
-        
+
         Vertex ci, cb;
         auto bbin = sl::boundingBox(bin_);
 

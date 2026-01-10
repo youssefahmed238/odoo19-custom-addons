@@ -34,37 +34,15 @@ def snap_vertices(vertices, grid_size=1.0, tolerance=0.5):
 def add_rect_shape(n, shapes):
     """Add n rectangular shapes (100x100mm)"""
     for i in range(n):
-        item = Item([
-            Point(0,0),
-            Point(0, 100 * MM),
-            Point(100 * MM,100 * MM),
-            Point(100 * MM, 0),
-            Point(100 * MM, 0),
-            Point(0,0)
-            # Point(0, 100 * MM),
-            # # Point(i * 100 * MM if i < 10 else 100 * MM, 100 * MM),
-            # # Point(i * 100 * MM if i < 10 else 100 * MM, 0),
-            # Point(100 * MM, 100 * MM),
-            # Point(100 * MM, 0),
-            # Point(0, 0),
-            # Point(0, 100 * MM)
-        ])
+        item = Item([(0.0, 0.0), (0.0, 100.0), (100.0, 100.0), (100.0, 0.0), (0, 0)])
+        print(item)
         shapes.append(item)
 
 
 def add_triangle_shape(n, shapes):
     """Add n right triangle shapes (95x95mm)"""
     for i in range(n):
-        item = Item([
-            # Point(0, 68 * MM),
-            # Point(68 * MM, 68 * MM),
-            # Point(68 * MM, 0),
-            # Point(0, 68 * MM)
-            Point(0, 0),
-            Point(0, 68 * MM),
-            Point(68 * MM, 0),
-            Point(0, 0)
-        ])
+        item = Item([(0, 0), (0, 68), (68, 0), (0, 0)])
         shapes.append(item)
 
 
@@ -72,14 +50,14 @@ def test_bottom_left_packing():
     """Test strict bottom-left packing with NFP algorithm"""
 
     # Set up sheet dimensions
-    sheet_w = 420 # mm
+    sheet_w = 420  # mm
     sheet_h = 420  # mm
-    box = Box(sheet_w * MM, sheet_h * MM)
+    box = Box(sheet_w, sheet_h)
 
     # Create shapes: 1 square + 4 triangles
     shapes = []
     add_rect_shape(20, shapes)  # 1 rectangle (100x100)
-    add_triangle_shape(30, shapes)  # 4 triangles (95x95)
+    # add_triangle_shape(4, shapes)  # 4 triangles (95x95)
 
     print("=" * 60)
     print("NESTING WITH NFP ALGORITHM - BOTTOM-LEFT PRIORITY")
@@ -105,8 +83,9 @@ def test_bottom_left_packing():
         print(f"\nBin {bin_idx + 1}: {len(bin_items)} items")
 
         for item_idx, item in enumerate(bin_items):
-            vertices = item.get_vertices()
-            points = [(pt.x / MM, pt.y / MM) for pt in vertices]
+            vertices = item.get_points()
+            print(vertices)
+            points = vertices
 
             # Snap coordinates to clean values
             snapped_points = snap_vertices(points, grid_size=1.0, tolerance=0.6)
@@ -142,8 +121,8 @@ def test_bottom_left_packing():
 
         # Draw items in this bin
         for idx, item in enumerate(bin_items):
-            vertices = item.get_vertices()
-            points = [(pt.x / MM, pt.y / MM) for pt in vertices]
+            vertices = item.get_points()
+            points = vertices
 
             # Snap for visualization
             snapped_points = snap_vertices(points, grid_size=1.0, tolerance=0.6)
@@ -168,7 +147,7 @@ def test_bottom_left_packing():
         ax.set_ylabel('Height (mm)', fontsize=10)
 
         # Add utilization info
-        total_area = sum(item.area() for item in bin_items) / (MM * MM)
+        total_area = sum(item.area() for item in bin_items)
         bin_area = sheet_w * sheet_h
         utilization = (total_area / bin_area) * 100
         ax.text(10, sheet_h - 20, f'Utilization: {utilization:.1f}%',

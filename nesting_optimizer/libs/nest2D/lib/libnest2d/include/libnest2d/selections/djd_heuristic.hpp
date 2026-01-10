@@ -78,7 +78,7 @@ public:
         /**
          * @brief Allow parallel jobs for filling multiple bins.
          *
-         * This will decrease the soution quality but can greatly boost up
+         * This will decrease the solution quality but can greatly boost up
          * performance for large number of items.
          */
         bool allow_parallel = true;

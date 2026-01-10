@@ -1,18 +1,22 @@
-from nest2D import Point, Box, Item, nest, SVGWriter
+try:
+    from nest2D import Point, Box, Item, nest, SVGWriter
+except ImportError as e:
+    print("Error importing nest2D module.")
+    raise e
 
 
 def add_shape1(n, items):
     for i in range(n):
         item = Item([
-            # Point(-5000000, 8954050),
-            # Point(5000000, 8954050),
-            # Point(5000000, -45949),
-            # Point(4972609, -568550),
-            # Point(3500000, -8954050),
-            # Point(-3500000, -8954050),
-            # Point(-4972609, -568550),
-            # Point(-5000000, -45949),
-            # Point(-5000000, 8954050)
+            Point(-5000000, 8954050),
+            Point(5000000, 8954050),
+            Point(5000000, -45949),
+            Point(4972609, -568550),
+            Point(3500000, -8954050),
+            Point(-3500000, -8954050),
+            Point(-4972609, -568550),
+            Point(-5000000, -45949),
+            Point(-5000000, 8954050)
 
             # triangle shape
             Point(-10000000, 12000000),
