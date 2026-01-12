@@ -2,7 +2,7 @@ from odoo import models, fields, api
 from odoo.exceptions import UserError
 
 try:
-    from nest2D import Point, Box, Item, nest, PlacerType, SelectorType
+    # from nest2D import Point, Box, Item, nest
     import matplotlib
     import matplotlib.pyplot as plt
     import matplotlib.patches as patches
@@ -104,9 +104,9 @@ class SaleOrder(models.Model):
             height
         )
 
-        return [Item([
-            Point(x, y) for x, y in scaled_points
-        ])] * int(quantity)
+        # return [Item([
+        #     Point(x, y) for x, y in scaled_points
+        # ])] * int(quantity)
 
     def _get_shape_dimensions(self, shape):
         """Get the bounding box dimensions of a shape"""
@@ -270,7 +270,7 @@ class SaleOrder(models.Model):
                         'name': sheet.name,
                         'used_quantity': use_qty,
                         'shapes': assigned_shapes,
-                        'box': Box(int(sheet_width * MM), int(sheet_height * MM)),
+                        # 'box': Box(int(sheet_width * MM), int(sheet_height * MM)),
                         'width': sheet_width,
                         'height': sheet_height,
                     }
@@ -590,34 +590,34 @@ class SaleOrder(models.Model):
             print(f"Sheet dimensions: {sheet_width} x {sheet_height} mm")
 
             # Run nesting with NFP algorithm
-            pgrp = nest(sheet_shapes, box,
-                        placer_type=PlacerType.NFP,
-                        selector_type=SelectorType.DJDHeuristic,
-                        spacing=self.spacing)
+            # pgrp = nest(sheet_shapes, box,
+            #             placer_type=PlacerType.NFP,
+            #             selector_type=SelectorType.DJDHeuristic,
+            #             spacing=self.spacing)
 
             nesting_results[sheet_id] = {
                 'sheet_name': sheet_name,
                 'sheet_width': sheet_width,
                 'sheet_height': sheet_height,
                 'sheet_count': sheet_count,
-                'bins': pgrp,
+                # 'bins': pgrp,
             }
 
             # Get visualization data and create attachment
-            viz_bins = self.visualize_nesting_result_bins(sheet_name, sheet_width, sheet_height, pgrp)
+            # viz_bins = self.visualize_nesting_result_bins(sheet_name, sheet_width, sheet_height, pgrp)
 
-            for v in viz_bins:
-                attachment = self.env['ir.attachment'].create({
-                    # Sheet + Bin number in the name (VERY IMPORTANT for grouping in JS)
-                    'name': f'Nesting Result: {v["sheet_name"]} - Bin {v["bin_index"]}',
-                    'type': 'binary',
-                    'datas': v['base64'],
-                    'res_model': 'sale.order',
-                    'res_id': self.id,
-                    'mimetype': 'image/png',
-                    'description': f'Sheet:{v["sheet_name"]}|Bin:{v["bin_index"]}|Items:{v["items_count"]}',
-                })
-                created_attachments.append(attachment)
+            # for v in viz_bins:
+            #     attachment = self.env['ir.attachment'].create({
+            #         # Sheet + Bin number in the name (VERY IMPORTANT for grouping in JS)
+            #         'name': f'Nesting Result: {v["sheet_name"]} - Bin {v["bin_index"]}',
+            #         'type': 'binary',
+            #         'datas': v['base64'],
+            #         'res_model': 'sale.order',
+            #         'res_id': self.id,
+            #         'mimetype': 'image/png',
+            #         'description': f'Sheet:{v["sheet_name"]}|Bin:{v["bin_index"]}|Items:{v["items_count"]}',
+            #     })
+            #     created_attachments.append(attachment)
 
         self._print_nesting_statistics(nesting_results, spacing=0)
 
