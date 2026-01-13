@@ -2,12 +2,12 @@
 #include "../utils/converter.hpp"
 
 namespace item {
-    Item *create(const std::vector<std::pair<double, double> > &points) {
+    std::unique_ptr<Item> create(const std::vector<std::pair<double, double> > &points) {
         std::vector<Point> lib_points;
         for (const auto &[x, y]: points) {
             lib_points.emplace_back(Convertor::mm_to_lib(x), Convertor::mm_to_lib(y));
         }
-        return new Item(lib_points);
+        return std::make_unique<Item>(lib_points);
     }
 
     std::vector<std::pair<double, double> > get_points(const Item &item) {

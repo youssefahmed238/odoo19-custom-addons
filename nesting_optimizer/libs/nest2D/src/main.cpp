@@ -1,6 +1,7 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 #include <libnest2d/libnest2d.hpp>
+#include <memory>
 
 #include "../tools/svgtools.hpp"
 
@@ -88,7 +89,7 @@ PYBIND11_MODULE(nest2D, m) {
             .def(py::init([]() {
                 SVGWriter::Config conf;
                 conf.mm_in_coord_units = libnest2d::mm();
-                return std::unique_ptr<SVGWriter>(new SVGWriter(conf));
+                return std::make_unique<SVGWriter>(conf);
             }))
             .def("write_packgroup", [](SVGWriter &sw, const PackGroup &pgrp) {
                 sw.setSize(Box(libnest2d::mm(250), libnest2d::mm(210)));

@@ -18,9 +18,9 @@
 
             <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']"
                    position="before">
-                <field name="has_dxf_file" column_invisible="1"/>
-                <field name="width" invisible="not has_dxf_file"/>
-                <field name="height" invisible="not has_dxf_file"/>
+                <field name="has_dxf_shape" column_invisible="1"/>
+                <field name="width" invisible="not has_dxf_shape"/>
+                <field name="height" invisible="not has_dxf_shape"/>
             </xpath>
 
             <xpath expr="//page[@name='customer_signature']" position="after">

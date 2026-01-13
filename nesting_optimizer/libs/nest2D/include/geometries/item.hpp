@@ -9,7 +9,7 @@ using Item = libnest2d::Item;
 
 
 namespace item {
-    Item *create(const std::vector<std::pair<double, double> > &points);
+    std::unique_ptr<Item> create(const std::vector<std::pair<double, double> > &points);
 
     std::vector<std::pair<double, double> > get_points(const Item &item);
 

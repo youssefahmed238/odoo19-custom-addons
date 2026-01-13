@@ -9,8 +9,9 @@ namespace py = pybind11;
 
 void bind_item(py::module &m) {
     py::class_<Item>(m, "Item", "An item to be placed on a sheet.")
-            .def(py::init(&item::create), py::arg("points"))
-
+            .def(py::init([](const std::vector<Point>& points) {
+                return Item(points);
+            }), py::arg("points"))
             .def("get_points", &item::get_points)
             .def("area", &item::area)
 

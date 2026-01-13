@@ -10,6 +10,7 @@
             <xpath expr="//field[@name='product_tooltip']" position="after">
                 <field name="width"/>
                 <field name="height"/>
+                <field name="unit" widget="radio"/>
             </xpath>
         </field>
     </record>

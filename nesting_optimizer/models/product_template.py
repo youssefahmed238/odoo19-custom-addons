@@ -10,13 +10,63 @@ import tempfile
 
 
 class ProductTemplate(models.Model):
-    _inherit = 'product.template'
+    _inherit = ['product.template', 'nester']
 
-    dxf_file = fields.Binary("DXF File", attachment=True)
+    dxf_shape = fields.Binary("DXF Shape")
+    dxf_filename = fields.Char("DXF Filename")
+
+    svg_shape = fields.Binary("SVG Shape")
+    svg_filename = fields.Char("SVG Filename")
+
     shape_points = fields.Text("Shape Points")
 
     width = fields.Float("Width")
     height = fields.Float("Height")
+
+    # shape = fields.Serialized("Shape Data")
+
+    @api.onchange('dxf_shape')
+    def _onchange_dxf_shape(self):
+        if self.dxf_shape:
+            shape_points = self.convert_dxf_to_shape(self.dxf_shape)
+            if shape_points:
+                self.shape_points = shape_points
+                result = self.convert_shape_to_image1920(self.shape_points)
+                if result:
+                    self.image_1920 = result['image']
+                    self.name = self.dxf_filename.rsplit('.', 1)[0]
+
+                    # Set width and height directly in memory for immediate access
+                    self.width = result['width']
+                    self.height = result['height']
+
+                    # Print the updated values after they're calculated and set
+                    print(f"Updated width: {result['width']}")
+                    print(f"Updated height: {result['height']}")
+
+    def ensure_dimensions_calculated(self):
+        """Ensure width and height are calculated from DXF if available"""
+        self.ensure_one()
+        if self.dxf_shape and (not self.width or not self.height):
+            shape_points = self.convert_dxf_to_shape(self.dxf_shape)
+            if shape_points:
+                result = self.convert_shape_to_image1920(shape_points)
+                if result:
+                    self.width = result['width']
+                    self.height = result['height']
+                    return True
+        return False
+
+
+
+
+
+
+
+
+
+
+    dxf_file = fields.Binary("DXF File", attachment=True)
 
     def convert_dxf_to_image1920(self, dxf_data):
         """Convert DXF file to PNG image and set as product image"""
