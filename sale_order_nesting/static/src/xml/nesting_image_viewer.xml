@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="nesting_image_viewer.Template">
+        <div class="o_nesting_image_viewer">
+
+            <t t-if="state.loading">
+                <div class="text-muted text-center p-3">
+                    Loading nesting images...
+                </div>
+            </t>
+
+            <t t-if="!state.loading and state.sheets.length === 0">
+                <div class="alert alert-info">
+                    No nesting results generated yet.
+                </div>
+            </t>
+
+            <t t-if="!state.loading">
+                <t t-foreach="state.sheets" t-as="sheet" t-key="sheet.name">
+                    <!-- Sheet Images -->
+                    <br/>
+                    <div class="nesting-sheet-images">
+                        <t t-foreach="sheet.images" t-as="img" t-key="img.id">
+                            <img t-att-src="img.url"
+                                 class="nesting-image"/>
+                        </t>
+                    </div>
+                    <br/>
+
+                </t>
+            </t>
+
+        </div>
+    </t>
+
+</templates>

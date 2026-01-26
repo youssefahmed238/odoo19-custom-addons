@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_sale_order_form_nesting_optimizer" model="ir.ui.view">
+        <field name="name">sale.order.form.nesting.optimizer</field>
+        <field name="model">sale.order</field>
+        <field name="inherit_id" ref="sale.view_order_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//header" position="inside">
+                <button name="action_calculate" string="Calculate" type="object" class="btn-primary"
+                        invisible="not has_dxf_products"/>
+            </xpath>
+
+            <xpath expr="//group[@name='order_details']//field[@name='payment_term_id']"
+                   position="after">
+                <field name="spacing" invisible="not has_dxf_products"/>
+            </xpath>
+
+            <xpath expr="//field[@name='order_line']/list/field[@name='price_unit']"
+                   position="before">
+                <field name="has_dxf_shape" column_invisible="1"/>
+                <field name="width" invisible="not has_dxf_shape"/>
+                <field name="height" invisible="not has_dxf_shape"/>
+            </xpath>
+
+            <xpath expr="//page[@name='customer_signature']" position="after">
+
+                <page string="Calculate Page" name="calculate_page">
+                    <div class="row">
+                        <div class="global_st col-4">
+                            <!--                            <group class="group_one" string="Global Statistics">-->
+                            <!--                                <field name="used_stock_sheets" widget="many2many_tags" readonly="1"/>-->
+                            <!--                                <field name="total_used_area" readonly="1"/>-->
+                            <!--                                <field name="total_wasted_area" readonly="1"/>-->
+                            <!--                                <field name="cut_blade_kerf_thickness" readonly="1"/>-->
+                            <!--                            </group>-->
+                            <!--                            <group class="group_one" string="Sheet statistics">-->
+                            <!--                                <field name="stock_sheet"/>-->
+                            <!--                                <field name="used_area"/>-->
+                            <!--                                <field name="wasted_area"/>-->
+                            <!--                                <field name="cuts"/>-->
+                            <!--                                <field name="cut_length"/>-->
+                            <!--                                <field name="panels"/>-->
+                            <!--                                <field name="wasted_panels"/>-->
+                            <!--                            </group>-->
+                        </div>
+                        <div class="img_col col-7">
+                            <h6 class="text-center">Nesting Result Images</h6>
+                            <!--                            <group string="Nesting Result Images">-->
+                            <field name="nesting_images"
+                                   widget="nesting_image_viewer"
+                                   nolabel="1"/>
+                            <!--                            </group>-->
+                        </div>
+                    </div>
+                </page>
+
+            </xpath>
+        </field>
+    </record>
+
+</odoo>
