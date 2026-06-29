@@ -1,3 +1,5 @@
+from odoo.orm.models import BaseModel
+
 try:
     from odoo import models, api
     from odoo.exceptions import UserError
@@ -12,116 +14,236 @@ class Sheet(models.AbstractModel):
     _description = 'Sheet Mixin Model'
     _inherit = ['shape']
 
-    @api.model
-    def is_shape_fitting(self, shape, sheet_width, sheet_height):
-        """Check if a shape can fit within specified sheet dimensions."""
-        sw = shape.get('width', 0)
-        sh = shape.get('height', 0)
-        return (sw <= sheet_width and sh <= sheet_height) or (sh <= sheet_width and sw <= sheet_height)
-
-    @api.model
-    def check_validate_stock_sheets(self, stock_sheets, shapes):
-        """Validate stock sheets availability and capacity against shapes."""
-
-        # Validate stock sheets availability
-        if not stock_sheets:
-            raise UserError("No stock sheets available.")
-
-        shapes_area = sum(shape.get('item').area() * shape.get('qty', 1) for shape in shapes)
-        total_sheets_area = sum(sheet.width * sheet.height * sheet.qty_available for sheet in stock_sheets)
-
-        if total_sheets_area < shapes_area:
-            raise UserError("Stock sheets not sufficient to cover all of shapes.")
+    # =================================================================
+    #  Sorting / Printing
+    # =================================================================
 
     @api.model
     def sort_sheets_by_area(self, sheets):
-        """Sort sheets by area in ascending order (smallest to largest)."""
-        return sorted(sheets, key=lambda s: s.width * s.height)
+        """Sort sheets smallest to largest by area."""
+        return sorted(sheets, key=lambda s: (s.width * s.height, s.width, s.height))
 
     @api.model
-    def get_sheets_with_shapes(self, stock_sheets, shapes):
-        """Assign shapes to stock sheets and return the assignment."""
-        self.ensure_one()
+    def get_sheets(self, sheets):
+        return [{
+            'sheet': sheet,
+            'name': sheet.name,
+            'width': sheet.width,
+            'height': sheet.height,
+            'area': sheet.width * sheet.height,
+            'qty': sheet.qty_available,
+            'required_qty': 0,  # Initialize used quantity to 0
+            'remaining_qty': sheet.qty_available,  # Initialize remaining quantity to available quantity
+        } for sheet in self.sort_sheets_by_area(sheets)]
 
-        # Sort shapes by area (largest first)
-        sorted_shapes = self.sort_shapes_by_area(shapes)
+    @api.model
+    def print_sheets(self, sheets):
+        """Print sheet details for debugging."""
+        for sheet in sheets:
+            print(f"Sheet: {sheet.get('name', 'Unknown')}")
+            print(f"==== Width         : {sheet.get('width', 0)}")
+            print(f"==== Height        : {sheet.get('height', 0)}")
+            print(f"==== Area          : {sheet.get('area', 0)}")
+            print(f"==== Qty           : {sheet.get('qty', 0)}")
+            print(f"==== Used Qty      : {sheet.get('required_qty', 0)}")
+            print(f"==== Remaining Qty : {sheet.get('remaining_qty', 0)}")
+            print("#" * 50)
+        print()
 
-        # Sort sheets by area (smallest first)
-        sorted_sheets = self.sort_sheets_by_area(stock_sheets)
+    @api.model
+    def print_selected_sheets(self, shape, selected_sheets):
+        """Print selected sheet combination."""
 
-        sheets = {}
+        print("\n" + "=" * 70)
+        print(f"Shape    : {shape.get('name', 'Unknown')}")
+        print(f"Qty      : {shape.get('qty', 0)}")
+        print(f"Used Qty : {shape.get('required_qty', 0)}")
+        print(f"Remaining: {shape.get('remaining_qty', 0)}")
+        print("-" * 70)
 
-        # Process each sheet type
-        for sheet in sorted_sheets:
-            if not sorted_shapes:
-                break
-
-            sheet_total_area = sheet.width * sheet.height
-
-            # Process each instance of this sheet type
-            for sheet_instance in range(int(sheet.qty_available)):
-                if not sorted_shapes:
-                    break
-
-                # Reset area tracking for each new sheet instance
-                area_remaining = sheet_total_area
-                shapes_assigned = []
-
-                # Try to assign shapes to this sheet instance
-                for shape in sorted_shapes:
-                    if shape['qty'] <= 0:
-                        continue
-
-                    item = shape['item']
-                    shape_area = item.area()
-
-                    # Check if shape fits dimensionally
-                    if not self.is_shape_fitting(shape, sheet.width, sheet.height):
-                        continue
-
-                    # Assign as many of this shape as possible
-                    while shape['qty'] > 0 and shape_area <= area_remaining:
-                        shapes_assigned.append(item)
-                        shape['qty'] -= 1
-                        area_remaining -= shape_area
-
-                # If we assigned any shapes to this sheet instance, record it
-                if shapes_assigned:
-                    if sheet.id not in sheets:
-                        sheets[sheet.id] = {
-                            'name': sheet.name,
-                            'used_quantity': 0,
-                            'box': Box(sheet.width, sheet.height),
-                            'shapes': [],
-                            'width': sheet.width,
-                            'height': sheet.height,
-                        }
-
-                    sheets[sheet.id]['used_quantity'] += 1
-                    sheets[sheet.id]['shapes'].extend(shapes_assigned)
-
-                # Clean up fully assigned shapes (do this once per sheet instance)
-                sorted_shapes = [s for s in sorted_shapes if s['qty'] > 0]
-
-        # Check if any shapes remain unassigned
-        if sorted_shapes:
-            unassigned_count = sum(s['qty'] for s in sorted_shapes)
-            unassigned_details = '\n'.join([f"  - {s['name']}: {s['qty']} piece(s)" for s in sorted_shapes])
-
-            raise UserError(
-                f"Unable to assign {unassigned_count} shape(s) to available stock sheets.\n\n"
-                f"Unassigned shapes:\n{unassigned_details}\n\n"
-                "Please check stock availability or shape dimensions."
+        for sheet in selected_sheets:
+            print(
+                f"{sheet.get('name', 'Unknown'):<10}"
+                f" Size: {sheet.get('width', 0)}x{sheet.get('height', 0)}"
+                f" Used: {sheet.get('required_qty', 0)}/{sheet.get('qty', 0):<5}"
+                f" Remaining: {sheet.get('remaining_qty', 0)}"
             )
 
-        return sheets
+        print("=" * 70)
+
+    # =================================================================
+    #  Sheet / Shape Helpers
+    # =================================================================
 
     @api.model
-    def get_sheets(self, stock_sheets, shapes):
-        """Get sheets with assigned shapes."""
-        self.ensure_one()
+    def is_shape_fitting(self, shape, sheet):
+        """Return True if the shape fits on the sheet (normal or rotated)."""
+        shape_width, shape_height = shape.get('width', 0), shape.get('height', 0)
+        sheet_width, sheet_height = sheet.get('width', 0), sheet.get('height', 0)
+        return (
+                (shape_width <= sheet_width and shape_height <= sheet_height) or
+                (shape_height <= sheet_width and shape_width <= sheet_height)
+        )
 
-        # Validate stock sheets and shapes
-        self.check_validate_stock_sheets(stock_sheets, shapes)
+    @api.model
+    def shapes_per_sheet(self, sheet, shape_area):
+        """How many copies of the shape fit on one sheet instance (by area)."""
+        sheet_area = sheet.get('area', 0)
+        return sheet_area // shape_area if shape_area else 0
 
-        return self.get_sheets_with_shapes(stock_sheets, shapes)
+    @api.model
+    def sheets_needed(self, shape_qty, shapes_per_sheet):
+        """Ceiling division: how many sheet instances cover shape_qty copies."""
+        return -(-shape_qty // shapes_per_sheet) if shapes_per_sheet > 0 else 0
+
+    # =================================================================
+    #  Validation
+    # =================================================================
+
+    @api.model
+    def _check_shape_fits_dimensionally(self, shape, fitting_sheets):
+        """Raise if the shape does not fit dimensionally in any stock sheet."""
+        if not fitting_sheets:
+            raise UserError(
+                f"Shape '{shape.get('name', 'Unknown')}' "
+                f"({shape.get('width', 0)} × {shape.get('height', 0)}) "
+                f"does not fit dimensionally in any available stock sheet."
+            )
+
+    @api.model
+    def _check_stock_capacity(self, shape, fitting_sheets):
+        """Raise if total stock capacity is less than shape quantity needed."""
+        shape_qty = shape.get('remaining_qty', 0)
+        shape_area = shape.get('area', 0)
+        total_capacity = self.combination_capacity(fitting_sheets, shape_area)
+
+        if total_capacity < shape_qty:
+            raise UserError(
+                f"Shape '{shape.get('name', 'Unknown')}' requires {shape_qty} piece(s), "
+                f"but all fitting stock sheets combined can only hold {total_capacity} piece(s)."
+            )
+
+    @api.model
+    def validate_sheet_selection(self, shape, sheets):
+        """Run all validations before sheet selection. Returns only dimensionally fitting sheets."""
+        fitting_sheets = [sheet for sheet in sheets if
+                          sheet.get('remaining_qty', 0) > 0 and self.is_shape_fitting(shape, sheet)]
+
+        self._check_shape_fits_dimensionally(shape, fitting_sheets)
+        self._check_stock_capacity(shape, fitting_sheets)
+
+        return fitting_sheets
+
+    # =================================================================
+    #  Combination Helpers
+    # =================================================================
+
+    @api.model
+    def combination_capacity(self, combo, shape_area):
+        """Total shape copies a list of sheets can hold at full qty_available."""
+        return sum(
+            self.shapes_per_sheet(sheet, shape_area) * sheet.get('remaining_qty', 0)
+            for sheet in combo
+        )
+
+    @api.model
+    def build_result(self, combo, last_sheet, last_sheet_required_qty):
+        """
+        Build the final assignment list.
+        Every sheet in combo is used at full availability;
+        last_sheet is used only for the remaining quantity.
+        """
+        result = []
+
+        for sheet in combo:
+            sheet.update({
+                'required_qty': sheet.get('qty', 0)
+            })
+            result.append(sheet)
+
+        last_sheet.update({
+            'required_qty': last_sheet_required_qty
+        })
+        result.append(last_sheet)
+
+        return result
+
+    # =================================================================
+    #  Single-sheet / Combo Checks
+    # =================================================================
+
+    @api.model
+    def try_single_sheet(self, sheet, shape_qty, shape_area):
+        """Return assignment if this sheet type alone can cover shape_qty, else None."""
+        needed = self.sheets_needed(shape_qty, self.shapes_per_sheet(sheet, shape_area))
+        if 0 < needed <= sheet.get('remaining_qty', 0):
+            sheet.update({
+                'required_qty': needed
+            })
+            return [sheet]
+        return None
+
+    @api.model
+    def try_combination(self, combo, current_sheet, shape_qty, shape_area):
+        """Return assignment if combo + current_sheet together cover shape_qty, else None."""
+        remaining = shape_qty - self.combination_capacity(combo, shape_area)
+
+        if remaining <= 0:
+            return None  # combo alone was already enough (caught earlier)
+
+        needed = self.sheets_needed(remaining, self.shapes_per_sheet(current_sheet, shape_area))
+        if 0 < needed <= current_sheet.get('remaining_qty', 0):
+            return self.build_result(combo, current_sheet, needed)
+
+        return None
+
+    # =================================================================
+    #  Core Selection
+    # =================================================================
+
+    @api.model
+    def select_sheets(self, shape, sheets):
+        """
+        Find the smallest set of sheet types that can hold all copies of `shape`.
+
+        Strategy (greedy, smallest-first):
+          1. Try each fitting sheet type alone.
+          2. If one type is not enough, try it paired with every previously
+             seen candidate combination until the total capacity is met.
+          3. A valid combination is guaranteed to exist after validation.
+
+        Returns: [{'sheet': <sheet>, 'required_qty': <int>}, ...]
+        """
+        shape_qty = shape.get('remaining_qty', 0)
+        shape_area = shape.get('area', 0)
+
+        # Validate and get only dimensionally fitting sheets
+        fitting_sheets = self.validate_sheet_selection(shape, sheets)
+
+        # Grows as we see more sheets.
+        # Example after seeing A, B: [[A], [B], [A, B]]
+        candidate_combos = []
+
+        for sheet in fitting_sheets:
+
+            # 1. Sheet alone
+            result = self.try_single_sheet(sheet, shape_qty, shape_area)
+            if result:
+                return result
+
+            # 2. Every known combo + this sheet
+            new_combos = []
+            for combo in candidate_combos:
+                result = self.try_combination(combo, sheet, shape_qty, shape_area)
+                if result:
+                    return result
+                new_combos.append(combo + [sheet])
+
+            # Register sheet alone, then all extended combos, for future rounds
+            candidate_combos.append([sheet])
+            candidate_combos.extend(new_combos)
+
+        raise AssertionError(
+            f"select_sheets: no combination found for '{shape.get('name', 'Unknown')}' "
+            f"despite passing validation. This should never happen."
+        )

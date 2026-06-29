@@ -36,16 +36,36 @@ class Shape(models.AbstractModel):
         """Get shape data including scaled points and dimensions."""
         shape = json.loads(json_shape)
 
-        scaled_points = self.scale_points(shape, target_width, target_height)
+        item = Item(self.scale_points(shape, target_width, target_height))
 
-        shape['item'] = Item(scaled_points)
-        shape['width'] = target_width
-        shape['height'] = target_height
-        shape['qty'] = int(qty)
+        shape.update({
+            "item": item,
+            "width": target_width,
+            "height": target_height,
+            "area": item.area(),
+            "qty": qty,
+            "used_qty": 0,  # Initialize used quantity to 0
+            "remaining_qty": qty,  # Initialize remaining quantity to requested quantity
+        })
 
         return shape
 
     @api.model
     def sort_shapes_by_area(self, shapes):
         """Sort shapes by area in descending order (largest first)."""
-        return sorted(shapes, key=lambda s: s['item'].area(), reverse=True)
+        return sorted(shapes, key=lambda shape: shape['area'], reverse=True)
+
+    @api.model
+    def print_shapes(self, shapes):
+        """Print shape details for debugging."""
+        for shape in shapes:
+            print(f"Shape: {shape.get('name', 'Unnamed')}")
+            print(f" ==== Width: {shape.get('width', 0)}")
+            print(f" ==== Height: {shape.get('height', 0)}")
+            print(f" ==== Area: {shape.get('area', 0)}")
+            print(f" ==== Quantity: {shape.get('qty', 0)}")
+            print(f" ==== Used Quantity: {shape.get('used_qty', 0)}")
+            print(f" ==== Remaining Quantity: {shape.get('remaining_qty', 0)}")
+            print("#" * 50)
+
+        print("\n")
